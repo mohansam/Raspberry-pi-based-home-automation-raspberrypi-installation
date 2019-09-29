@@ -1,0 +1,11 @@
+start_merdian=None
+stop_merdian=None
+time_lst=[3,0,5,0]
+timer_toggle=False
+check=False
+light1_toggle=False
+main=True
+relayStop=True
+fan_toggle=False
+plug_toggle=False
+light2_toggle=False

@@ -1,0 +1,78 @@
+import snowboydecoder
+import sys
+import signal
+import pygame
+import threading 
+pygame.init()
+display_width = 400
+display_height = 480
+Display = pygame.display.set_mode((display_width,display_height))
+black = (64,64,64)
+yellow=(128,129,0)
+light_blue=(0,128,255)
+bright_green=(0,255,0)
+events=None
+position=None
+interrupted = False
+detector=None
+def gui():
+    def button(msg,x,y,w,h,ic,ac,action=None):           
+        if type(position)==list and x+w > position[0] > x and y+h > position[1] > y and action!=None:
+            pygame.draw.rect(Display, bright_green,(x,y,w,h))
+            action(msg)                  
+        elif start_toggle==True and msg=="Start time":
+            pygame.draw.rect(Display, bright_green,(x,y,w,h))
+        else:
+                    pygame.draw.rect(Display, ic,(x,y,w,h))
+    def get_events():
+         global events
+         events=pygame.event.get()
+    def touch_pos():
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                return list(event.pos)
+    def quit_window():
+        for event in events:
+            if event.type == pygame.QUIT:
+                detector.terminate()
+                pygame.quit()
+    while True:
+          get_events()
+          quit_window()
+          position=touch_pos()
+          Display.fill((255,127,80))
+          pygame.display.update()
+    
+def voice_recog():
+    global detector
+    def signal_handler(signal, frame):
+        global interrupted
+        interrupted = True
+
+
+    def interrupt_callback():
+        global interrupted
+        return interrupted
+
+    try:
+        model = "/home/pi/Desktop/package/snowboy/snowboy.pmdl"
+        # capture SIGINT signal, e.g., Ctrl+C
+        signal.signal(signal.SIGINT, signal_handler)
+        detector = snowboydecoder.HotwordDetector(model, sensitivity=0.5)
+        print('Listening... Press Ctrl+C to exit')
+        # main loop
+        detector.start(detected_callback=snowboydecoder.play_audio_file,
+                   interrupt_check=interrupt_callback,
+                   sleep_time=0.03)
+    except:
+        detector.terminate()
+        
+    finally:
+        detector.terminate()
+if __name__ == "__main__": 
+     t1 = threading.Thread(target=gui)
+     t1.start()
+     voice_recog()
+     
+     
+    
